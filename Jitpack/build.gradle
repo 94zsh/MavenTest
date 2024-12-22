@@ -1,0 +1,47 @@
+plugins {
+    alias(libs.plugins.android.library)
+//    alias(libs.plugins.maven.public)
+//    alias('maven-public')
+}
+
+android {
+    namespace 'com.example.jitpack'
+    compileSdk 35
+
+    defaultConfig {
+        minSdk 24
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+task assembleReleaseAAR(type: Copy) {
+    from 'Jitpack/build/outputs/aar/Jitpack-release.aar' // 根据实际路径修改
+    into "outputs/aar"
+}
+gradle.projectsEvaluated {
+    assembleRelease.doLast {
+        assembleRelease.dependsOn assembleReleaseAAR
+    }
+}
+dependencies {
+
+    implementation libs.androidx.appcompat
+    implementation libs.material
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.espresso.core
+//    implementation 'com.github.User:Repo:Tag'
+}

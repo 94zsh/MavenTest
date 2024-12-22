@@ -1,0 +1,144 @@
+plugins {
+    alias(libs.plugins.android.library)
+}
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+android {
+    namespace 'com.example.res'
+    compileSdk 35
+
+    defaultConfig {
+        minSdk 24
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+
+    implementation libs.androidx.appcompat
+    implementation libs.material
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.espresso.core
+}
+
+// 生成AAR文件
+task makeJar(type: Copy) {
+    // 删除已存在的AAR
+    delete 'build/outputs/Res-debug.aar'
+
+    // 设置要复制的AAR路径
+    from('build/outputs/aar/Res-debug.aar')
+    into('build/outputs/')
+    // 重命名生成的AAR文件
+    rename ('.+.aar', 'Reslib.aar')
+}
+makeJar.dependsOn(build)
+
+
+
+def LIB_VERSION_CODE = 1
+def LIB_VERSION_NAME = "1.0"
+def LIB_GROUP_ID = 'io.github.94zsh'
+def LIB_ARTIFACT_ID = 'closed_source_arr'
+ext {
+    release = '1.0.0'
+}
+// 将当前module打包发布到本地maven仓库
+afterEvaluate {
+    publishing {
+        // 配置maven 仓库
+        repositories {
+            // build/outputs/maven_repo
+            maven { url uri(new File(buildDir, "outputs/maven_repo").path) }
+        }
+        // 配置发布产物
+        publications {
+            maven(MavenPublication) { // 容器可配置的信息 MavenPublication
+                //                // 注：AGP 3.6.0 及以上才能使用，作用是将 Android Gradle 插件生成的组件，作为发布的内容
+                from components.release
+//                from components.java
+                groupId LIB_GROUP_ID
+                artifactId LIB_ARTIFACT_ID
+                version LIB_VERSION_NAME
+            }
+        }
+    }
+}
+
+//publishing {
+//    publications {
+//        maven(MavenPublication) {
+//            groupId 'io.github.94zsh' //开通maven central时候定义的
+//            artifactId 'dialog-lib' //资源名称
+//            version '0.9.4' //版本名称
+//            pom {
+//                name = 'dialog-lib'
+//                description = 'dialog lib'
+////                url = 'https://github.com/xiaozeiqwe8/DialogLib'
+//                url = 'https://github.com/94zsh/MavenTest.git'
+//                inceptionYear = '2021'
+//
+//                scm {
+//                    url = 'https://github.com/94zsh/MavenTest.git'
+//                    connection = 'scm:git@github.com:94zsh/MavenTest.git'
+//                    developerConnection = 'scm:git@github.com:94zsh/MavenTest.git'
+//                }
+//
+//                licenses {
+//                    license {
+//                        name = 'The Apache Software License, Version 2.0'
+//                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+//                        distribution = 'repo'
+//                        comments = 'A business-friendly OSS license'
+//                    }
+//                }
+//
+//                developers {
+//                    developer {
+//                        id = 'xiaozei'
+//                        name = 'zz'
+//                        email = 'xiaozeiqwe8@163.com'
+//                        url = 'https://github.com/94zsh/MavenTest.git'
+//                    }
+//                }
+//
+//                issueManagement {
+//                    system = 'Github'
+//                    url = 'https://github.com/94zsh/MavenTest.git'
+//                }
+//            }
+//            artifact generateSourcesJar //需要上传的source jar
+//            artifact generateJavadoc //需要上传的java doc
+//            artifact makeJar //需要上传的资源jar路径或者是aar路径，这边可以填写一个生成jar的task，如makeJar方法就是一个生成jar的task
+//        }
+//    }
+//    repositories {
+//        maven {
+//            // 指定要上传的maven仓库
+//            url = 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+//            //Maven仓库用户名和密码
+//            credentials {
+//                username 'xiaozeiqwe8'
+//                password password
+//            }
+//        }
+//    }
+//}
+//signing {
+//    sign publishing.publications.maven //签名配置
+//}
